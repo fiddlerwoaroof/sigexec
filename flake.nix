@@ -11,6 +11,7 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = {
@@ -18,13 +19,15 @@
     nixpkgs,
     zig,
     flake-compat,
-  }: let
-    pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-    zig091 = zig.packages.aarch64-darwin."0.9.1";
-  in
-    {
-      devShell.aarch64-darwin = pkgs.mkShell {
-        buildInputs = [zig091 nixpkgs.legacyPackages.aarch64-darwin.socat];
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+      zig091 = zig.packages.${system}."0.9.1";
+      socat = pkgs.socat;
+    in {
+      devShell = pkgs.mkShell {
+        buildInputs = [zig091 socat];
       };
-    };
+    });
 }
