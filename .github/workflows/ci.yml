@@ -20,7 +20,30 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    ## attempt to cache nix store
+    - run: |
+        # Create with liberal rights, otherwise cache action will complain
+        # about permission errors.
+        sudo mkdir -p /nix/store
+        sudo chmod -R 777 /nix
+
+    - name: Cache nix env take N+1
+      uses: actions/cache@v2
+      with:
+        path: |
+          # See https://github.com/actions/cache/pull/726
+          /nix/store/**
+          # Missing something?
+          /nix/var/nix/*/*
+          /nix/var/nix/db/*
+          /nix/var/nix/db/*/**
+          !/nix/var/nix/daemon-socket/socket
+          !/nix/var/nix/userpool/*
+          !/nix/var/nix/gc.lock
+          !/nix/var/nix/db/big-lock
+          !/nix/var/nix/db/reserved
+        key: ${{ runner.os }}-nix-store
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
