@@ -29,5 +29,8 @@
       devShell = pkgs.mkShell {
         buildInputs = [zig091 socat];
       };
+      defaultPackage = pkgs.mkShell {
+        buildInputs = [zig091 socat];
+      };
     });
 }
