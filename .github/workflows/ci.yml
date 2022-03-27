@@ -36,7 +36,6 @@ jobs:
           nix develop -c zig build -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
           nix develop -c zig build -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
           nix develop -c zig build -Dtarget=aarch64-macos-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-gnu
-          nix develop -c zig build -Dtarget=aarch64-macos-universal && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-universal
           nix develop -c zig build -Dtarget=aarch64_be-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64_be-linux-gnu
           nix develop -c zig build -Dtarget=arm-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabi
           nix develop -c zig build -Dtarget=arm-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabihf
