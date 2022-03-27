@@ -1,0 +1,42 @@
+#+TITLE: socket-based command runner
+#+TAGS: utilities
+#+AUTHOR: Ed Langley
+
+** Introduction
+
+Run a command everytime a line is written to a unix socket, passing
+the line written as the last argument to the command. Useful in an
+=after-save-hook= in emacs to run tests after the buffer is saved.
+Unlike file-watchers, this allows more precise control of when the
+tests are run, reducing the amount of time spent configuring ignore
+files and waiting for spurious reruns.
+
+** Building
+
+#+BEGIN_SRC zsh :results output :post proc
+  zig build --verbose 2>&1
+#+END_SRC
+
+** Usage
+
+#+BEGIN_SRC zsh
+rm /tmp/jest.sock ; $OLDPWD/zig-out/bin/zig-test /tmp/jest.sock npx jest --
+#+END_SRC
+
+#+NAME: proc
+#+BEGIN_SRC elisp :exports none
+  (defun fix (fn inp)
+    (cl-loop for old = inp then new
+             for new = (funcall fn inp)
+             until (equal new old)
+             finally (cl-return new)))
+  (s-join
+   "\n"
+   (funcall (fwoar/over (lambda (it)
+                          (    (lambda (v)
+                                 (s-replace-regexp " \\(--\\|#\\)" " \\\\\n  \\1" v))
+                               (s-replace-regexp "/nix/store/[^/]*/\\(.* \\)"
+                                                 "/nix/.../\\1"
+                                                 (s-replace "/Users/edwlan" "~" it)))))
+            (s-lines (s-trim *this*))))
+#+END_SRC
