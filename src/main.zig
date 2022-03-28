@@ -8,9 +8,10 @@ pub fn main() anyerror!void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("{}", .{args.len});
-    try stdout.writeAll("\n");
+    if (args.len < 3) {
+        std.log.error("Usage: sigexec <socket> <command...>");
+        return;
+    }
 
     var server = net.StreamServer.init(.{});
     defer server.deinit();
@@ -45,9 +46,8 @@ const Client = struct {
 
         try dynargs.appendSlice(args);
 
-        try self.conn.stream.writer().writeAll("server: howdy!");
+        try self.conn.stream.writer().writeAll("ACK!");
 
-        // const stdout = std.io.getStdOut().writer();
         var buffer: [1024]u8 = undefined;
         var nl = (try nextLine(self.conn.stream.reader(), &buffer)).?;
         try dynargs.append(nl);
