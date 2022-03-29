@@ -9,7 +9,7 @@ pub fn main() anyerror!void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 3) {
-        std.log.error("Usage: sigexec <socket> <command...>");
+        std.log.error("Usage: sigexec <socket> <command...>", .{});
         return;
     }
 
