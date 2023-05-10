@@ -6,7 +6,7 @@
       repo = "nixpkgs";
       ref = "12417777b226eff91efee8b03578daa76c8178a3";
     };
-    zig.url = "github:arqv/zig-overlay";
+    zig.url = "github:mitchellh/zig-overlay";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
