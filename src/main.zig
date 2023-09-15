@@ -52,7 +52,7 @@ const Client = struct {
         var nl = (try nextLine(self.conn.stream.reader(), &buffer)).?;
         try dynargs.append(nl);
 
-        const proc = try std.ChildProcess.init(dynargs.toOwnedSlice(), allocator);
+        var proc = std.ChildProcess.init(dynargs.toOwnedSlice(), allocator);
         _ = try nosuspend proc.spawn();
     }
 };

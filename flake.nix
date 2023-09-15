@@ -4,7 +4,6 @@
       type = "github";
       owner = "nixos";
       repo = "nixpkgs";
-      ref = "12417777b226eff91efee8b03578daa76c8178a3";
     };
     zig.url = "github:mitchellh/zig-overlay";
     flake-compat = {
@@ -23,14 +22,14 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      zig091 = zig.packages.${system}."0.9.1";
+      zigc = zig.packages.${system}."0.10.1";
       socat = pkgs.socat;
     in {
       devShell = pkgs.mkShell {
-        buildInputs = [zig091 socat];
+        buildInputs = [zigc socat];
       };
       defaultPackage = pkgs.mkShell {
-        buildInputs = [zig091 socat];
+        buildInputs = [zigc socat];
       };
     });
 }
