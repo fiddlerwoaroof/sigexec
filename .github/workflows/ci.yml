@@ -33,35 +33,35 @@ jobs:
       - name: Run a multi-line script
         run: |
           mkdir out
-          nix develop -c zig build -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
-          nix develop -c zig build -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
-          nix develop -c zig build -Dtarget=aarch64-macos-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-gnu
-          nix develop -c zig build -Dtarget=aarch64_be-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64_be-linux-gnu
-          nix develop -c zig build -Dtarget=arm-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabi
-          nix develop -c zig build -Dtarget=arm-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabihf
-          nix develop -c zig build -Dtarget=arm-linux-musleabi && mv zig-out/bin/sigexec out/sigexec-arm-linux-musleabi
-          nix develop -c zig build -Dtarget=arm-linux-musleabihf && mv zig-out/bin/sigexec out/sigexec-arm-linux-musleabihf
-          nix develop -c zig build -Dtarget=i386-linux-gnu && mv zig-out/bin/sigexec out/sigexec-i386-linux-gnu
-          nix develop -c zig build -Dtarget=i386-linux-musl && mv zig-out/bin/sigexec out/sigexec-i386-linux-musl
-          nix develop -c zig build -Dtarget=mips-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-mips-linux-gnueabi
-          nix develop -c zig build -Dtarget=mips-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-mips-linux-gnueabihf
-          nix develop -c zig build -Dtarget=mips-linux-musl && mv zig-out/bin/sigexec out/sigexec-mips-linux-musl
-          nix develop -c zig build -Dtarget=mipsel-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-gnueabi
-          nix develop -c zig build -Dtarget=mipsel-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-gnueabihf
-          nix develop -c zig build -Dtarget=mipsel-linux-musl && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-musl
-          nix develop -c zig build -Dtarget=powerpc-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-gnueabi
-          nix develop -c zig build -Dtarget=powerpc-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-gnueabihf
-          nix develop -c zig build -Dtarget=powerpc-linux-musl && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-musl
-          nix develop -c zig build -Dtarget=riscv64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-riscv64-linux-gnu
-          nix develop -c zig build -Dtarget=riscv64-linux-musl && mv zig-out/bin/sigexec out/sigexec-riscv64-linux-musl
-          nix develop -c zig build -Dtarget=sparcv9-linux-gnu && mv zig-out/bin/sigexec out/sigexec-sparcv9-linux-gnu
-          nix develop -c zig build -Dtarget=thumb-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-thumb-linux-gnueabi
-          nix develop -c zig build -Dtarget=thumb-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-thumb-linux-gnueabihf
-          nix develop -c zig build -Dtarget=thumb-linux-musleabi && mv zig-out/bin/sigexec out/sigexec-thumb-linux-musleabi
-          nix develop -c zig build -Dtarget=thumb-linux-musleabihf && mv zig-out/bin/sigexec out/sigexec-thumb-linux-musleabihf
-          nix develop -c zig build -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
-          nix develop -c zig build -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
-          nix develop -c zig build -Dtarget=x86_64-macos-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-gnu
+          nix develop -c zig build -fstage1 -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=aarch64-macos-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-gnu
+          nix develop -c zig build -fstage1 -Dtarget=aarch64_be-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64_be-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=arm-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabi
+          nix develop -c zig build -fstage1 -Dtarget=arm-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-arm-linux-gnueabihf
+          nix develop -c zig build -fstage1 -Dtarget=arm-linux-musleabi && mv zig-out/bin/sigexec out/sigexec-arm-linux-musleabi
+          nix develop -c zig build -fstage1 -Dtarget=arm-linux-musleabihf && mv zig-out/bin/sigexec out/sigexec-arm-linux-musleabihf
+          nix develop -c zig build -fstage1 -Dtarget=i386-linux-gnu && mv zig-out/bin/sigexec out/sigexec-i386-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=i386-linux-musl && mv zig-out/bin/sigexec out/sigexec-i386-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=mips-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-mips-linux-gnueabi
+          nix develop -c zig build -fstage1 -Dtarget=mips-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-mips-linux-gnueabihf
+          nix develop -c zig build -fstage1 -Dtarget=mips-linux-musl && mv zig-out/bin/sigexec out/sigexec-mips-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=mipsel-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-gnueabi
+          nix develop -c zig build -fstage1 -Dtarget=mipsel-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-gnueabihf
+          nix develop -c zig build -fstage1 -Dtarget=mipsel-linux-musl && mv zig-out/bin/sigexec out/sigexec-mipsel-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=powerpc-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-gnueabi
+          nix develop -c zig build -fstage1 -Dtarget=powerpc-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-gnueabihf
+          nix develop -c zig build -fstage1 -Dtarget=powerpc-linux-musl && mv zig-out/bin/sigexec out/sigexec-powerpc-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=riscv64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-riscv64-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=riscv64-linux-musl && mv zig-out/bin/sigexec out/sigexec-riscv64-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=sparcv9-linux-gnu && mv zig-out/bin/sigexec out/sigexec-sparcv9-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=thumb-linux-gnueabi && mv zig-out/bin/sigexec out/sigexec-thumb-linux-gnueabi
+          nix develop -c zig build -fstage1 -Dtarget=thumb-linux-gnueabihf && mv zig-out/bin/sigexec out/sigexec-thumb-linux-gnueabihf
+          nix develop -c zig build -fstage1 -Dtarget=thumb-linux-musleabi && mv zig-out/bin/sigexec out/sigexec-thumb-linux-musleabi
+          nix develop -c zig build -fstage1 -Dtarget=thumb-linux-musleabihf && mv zig-out/bin/sigexec out/sigexec-thumb-linux-musleabihf
+          nix develop -c zig build -fstage1 -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
+          nix develop -c zig build -fstage1 -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
+          nix develop -c zig build -fstage1 -Dtarget=x86_64-macos-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-gnu
       - uses: actions/upload-artifact@v3
         with:
           name: executables
