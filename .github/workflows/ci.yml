@@ -33,13 +33,13 @@ jobs:
       - name: Run a multi-line script
         run: |
           mkdir out
-          nix develop -c zig build -fstage1 -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
-          nix develop -c zig build -fstage1 -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
-          nix develop -c zig build -fstage1 -Dtarget=aarch64-macos-none && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-none
-          nix develop -c zig build -fstage1 -Dtarget=i386-linux-gnu && mv zig-out/bin/sigexec out/sigexec-i386-linux-gnu
-          nix develop -c zig build -fstage1 -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
-          nix develop -c zig build -fstage1 -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
-          nix develop -c zig build -fstage1 -Dtarget=x86_64-macos-none && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-none
+          nix develop -c zig build -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
+          nix develop -c zig build -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
+          nix develop -c zig build -Dtarget=aarch64-macos-none && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-none
+          nix develop -c zig build -Dtarget=i386-linux-gnu && mv zig-out/bin/sigexec out/sigexec-i386-linux-gnu
+          nix develop -c zig build -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
+          nix develop -c zig build -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
+          nix develop -c zig build -Dtarget=x86_64-macos-none && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-none
       - uses: actions/upload-artifact@v3
         with:
           name: executables
