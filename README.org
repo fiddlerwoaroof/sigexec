@@ -13,8 +13,22 @@ files and waiting for spurious reruns.
 
 ** Building
 
+Choose either building with zig:
+
 #+BEGIN_SRC zsh :results output :post proc
   zig build --verbose 2>&1
+#+END_SRC
+
+Or nix:
+
+#+BEGIN_SRC zsh :results output :post proc
+  nix build github:fiddlerwoaroof/sigexec
+#+END_SRC
+
+One can also run the flake's default app like:
+
+#+BEGIN_SRC zsh :results output :post proc
+  nix run github:fiddlerwoaroof/sigexec <socket> <command...>
 #+END_SRC
 
 ** Usage
@@ -22,6 +36,27 @@ files and waiting for spurious reruns.
 #+BEGIN_SRC zsh
 rm /tmp/jest.sock ; $OLDPWD/zig-out/bin/zig-test /tmp/jest.sock npx jest --
 #+END_SRC
+
+
+** Full-stack example:
+
+*** In one terminal:
+
+#+begin_src zsh
+  % nix run github:fiddlerwoaroof/sigexec /tmp/bar.sock echo NOTICE ME: input:
+  # output:
+  # warning: listening at /tmp/bar.sock
+  #
+  # NOTICE ME: input: 4
+#+end_src
+
+*** In another terminal:
+
+#+begin_src zsh
+  # in another terminal:
+  % echo 4 | socat - unix-connect:/tmp/bar.sock ; echo
+  # ACK!
+#+end_src
 
 #+NAME: proc
 #+BEGIN_SRC elisp :exports none
