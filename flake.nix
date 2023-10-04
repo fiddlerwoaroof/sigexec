@@ -5,31 +5,30 @@
       owner = "nixos";
       repo = "nixpkgs";
     };
-    zig.url = "github:mitchellh/zig-overlay";
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = {
     self,
     nixpkgs,
-    zig,
-    flake-compat,
     flake-utils,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-      zigc = zig.packages.${system}."0.10.1";
-      socat = pkgs.socat;
-    in {
-      devShell = pkgs.mkShell {
-        buildInputs = [zigc socat];
+      pkgs = import nixpkgs {
+        inherit system;
       };
-      defaultPackage = pkgs.mkShell {
-        buildInputs = [zigc socat];
+      socat = pkgs.socat;
+    in rec {
+      devShells.default = pkgs.mkShell {
+        buildInputs = [pkgs.zig_0_10 socat];
+      };
+      devShell = devShells.default;
+      packages.default = pkgs.stdenv.mkDerivation {
+        pname = "sigexec";
+        version = "0.0.2";
+        src = ./.;
+
+        nativeBuildInputs = [pkgs.zig_0_10.hook];
       };
     });
 }

@@ -33,6 +33,7 @@ jobs:
       - name: Run a multi-line script
         run: |
           mkdir out
+          nix build
           nix develop -c zig build -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
           nix develop -c zig build -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
           nix develop -c zig build -Dtarget=aarch64-macos-none && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-none
