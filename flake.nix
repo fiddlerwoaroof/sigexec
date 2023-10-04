@@ -30,5 +30,9 @@
 
         nativeBuildInputs = [pkgs.zig_0_10.hook];
       };
+      apps.default = {
+        type = "app";
+        program = "${self.packages.${system}.default}/bin/sigexec";
+      };
     });
 }
