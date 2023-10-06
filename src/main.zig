@@ -53,6 +53,6 @@ const Client = struct {
         try dynargs.append(nl);
 
         var proc = std.ChildProcess.init(dynargs.toOwnedSlice(), allocator);
-        _ = try nosuspend proc.spawn();
+        _ = try proc.spawn();
     }
 };
