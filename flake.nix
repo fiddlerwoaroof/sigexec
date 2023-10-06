@@ -28,7 +28,19 @@
         version = "0.0.2";
         src = ./.;
 
-        nativeBuildInputs = [pkgs.zig_0_10.hook];
+        dontConfigure = true;
+
+        preBuild = ''
+          export HOME=$TMPDIR
+        '';
+
+        installPhase = ''
+          runHook preInstall
+          zig build -Drelease-safe -Dcpu=baseline --prefix $out install
+          runHook postInstall
+        '';
+
+        nativeBuildInputs = [pkgs.zig_0_10];
       };
       apps.default = {
         type = "app";
