@@ -12,27 +12,55 @@
     self,
     nixpkgs,
     flake-utils,
-  }:
+  }: let
+  in
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
       };
+      build_zig = deriv @ {nativeBuildInputs ? [], ...}:
+        pkgs.stdenv.mkDerivation ({
+            dontConfigure = true;
+
+            preBuild = ''
+              export HOME=$TMPDIR
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              zig build -Drelease-safe -Dcpu=baseline --prefix $out install
+              runHook postInstall
+            '';
+          }
+          // deriv
+          // {
+            nativeBuildInputs = [pkgs.zig_0_10] ++ nativeBuildInputs;
+          });
+      writeZsh = pkgs.writers.makeScriptWriter {interpreter = "${pkgs.zsh}/bin/zsh";};
       socat = pkgs.socat;
-    in rec {
+    in {
       devShells.default = pkgs.mkShell {
         buildInputs = [pkgs.zig_0_10 socat];
       };
-      devShell = devShells.default;
-      packages.default = pkgs.stdenv.mkDerivation {
+      devShell = self.devShells.default;
+      packages.default = build_zig {
         pname = "sigexec";
         version = "0.0.2";
         src = ./.;
 
-        nativeBuildInputs = [pkgs.zig_0_10.hook];
+        meta = with pkgs.lib; {
+          homepage = "https://github.com/fiddlerwoaroof/sigexec";
+          description = "A simple utility that runs a command with each line sent over a socket.";
+          license = licenses.mit;
+          platforms = platforms.linux ++ platforms.darwin;
+        };
       };
-      apps.default = {
+      apps.do-test = {
         type = "app";
-        program = "${self.packages.${system}.default}/bin/sigexec";
+        program = toString (writeZsh "test.zsh" ''
+          PATH="$PATH:${self.packages.${system}.default}/bin:${socat}/bin"
+          ${(builtins.readFile ./test.zsh)}
+        '');
       };
     });
 }
