@@ -36,6 +36,7 @@
           // {
             nativeBuildInputs = [pkgs.zig_0_10] ++ nativeBuildInputs;
           });
+      writeZsh = pkgs.writers.makeScriptWriter {interpreter = "${pkgs.zsh}/bin/zsh";};
       socat = pkgs.socat;
     in {
       devShells.default = pkgs.mkShell {
@@ -53,6 +54,13 @@
           license = licenses.mit;
           platforms = platforms.linux ++ platforms.darwin;
         };
+      };
+      apps.do-test = {
+        type = "app";
+        program = toString (writeZsh "test.zsh" ''
+          PATH="$PATH:${self.packages.${system}.default}/bin:${socat}/bin"
+          ${(builtins.readFile ./test.zsh)}
+        '');
       };
     });
 }

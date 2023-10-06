@@ -44,7 +44,7 @@ jobs:
 
       - name: Run test
         run: |
-          ./test.zsh
+          nix run .\#do-test
       - uses: actions/upload-artifact@v3
         with:
           name: executables

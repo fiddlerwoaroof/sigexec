@@ -1,4 +1,3 @@
-#!/usr/bin/env zsh
 
 # set -x
 set -eu -o pipefail
