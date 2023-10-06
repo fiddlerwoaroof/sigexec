@@ -16,7 +16,7 @@ files and waiting for spurious reruns.
 Choose either building with zig:
 
 #+BEGIN_SRC zsh :results output :post proc
-  zig build --verbose 2>&1
+  zig build --verbose
 #+END_SRC
 
 Or nix:
@@ -34,7 +34,7 @@ One can also run the flake's default app like:
 ** Usage
 
 #+BEGIN_SRC zsh
-rm /tmp/jest.sock ; $OLDPWD/zig-out/bin/zig-test /tmp/jest.sock npx jest --
+  rm /tmp/jest.sock ; $OLDPWD/zig-out/bin/zig-test /tmp/jest.sock npx jest --
 #+END_SRC
 
 
@@ -54,7 +54,7 @@ rm /tmp/jest.sock ; $OLDPWD/zig-out/bin/zig-test /tmp/jest.sock npx jest --
 
 #+begin_src zsh
   # in another terminal:
-  % echo 4 | socat - unix-connect:/tmp/bar.sock ; echo
+  % echo 4 | socat - unix-connect:/tmp/bar.sock
   # ACK!
 #+end_src
 

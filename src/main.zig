@@ -33,7 +33,7 @@ fn nextLine(reader: anytype, buffer: []u8) !?[]const u8 {
         buffer,
         '\n',
     )) orelse return null;
-    // trim annoying windows-only carriage return character
+
     return line;
 }
 
@@ -46,7 +46,7 @@ const Client = struct {
 
         try dynargs.appendSlice(args);
 
-        try self.conn.stream.writer().writeAll("ACK!");
+        try self.conn.stream.writer().writeAll("ACK!\n");
 
         var buffer: [1024]u8 = undefined;
         var nl = (try nextLine(self.conn.stream.reader(), &buffer)).?;
