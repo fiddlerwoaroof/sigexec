@@ -41,6 +41,10 @@ jobs:
           nix develop -c zig build -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
           nix develop -c zig build -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
           nix develop -c zig build -Dtarget=x86_64-macos-none && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-none
+
+      - name: Run test
+        run: |
+          ./test.zsh
       - uses: actions/upload-artifact@v3
         with:
           name: executables
