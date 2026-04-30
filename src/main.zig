@@ -1,6 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
-const Net = std.Io.Net;
+const Net = std.Net;
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
