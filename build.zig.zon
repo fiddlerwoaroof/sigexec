@@ -1,0 +1,14 @@
+.{
+    .name = .sigexec,
+    .version = "0.0.3",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "README.org",
+        "test.zsh",
+        "flake.nix",
+        "flake.lock",
+    },
+}

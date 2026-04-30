@@ -28,24 +28,24 @@
 
             installPhase = ''
               runHook preInstall
-              zig build -Drelease-safe -Dcpu=baseline --prefix $out install
+              zig build --release=safe -Dcpu=baseline --prefix $out install
               runHook postInstall
             '';
           }
           // deriv
           // {
-            nativeBuildInputs = [pkgs.zig_0_10] ++ nativeBuildInputs;
+            nativeBuildInputs = [pkgs.zig_0_16] ++ nativeBuildInputs;
           });
       writeZsh = pkgs.writers.makeScriptWriter {interpreter = "${pkgs.zsh}/bin/zsh";};
       socat = pkgs.socat;
     in {
       devShells.default = pkgs.mkShell {
-        buildInputs = [pkgs.zig_0_10 socat];
+        buildInputs = [pkgs.zig_0_16 socat];
       };
       devShell = self.devShells.default;
       packages.default = build_zig {
         pname = "sigexec";
-        version = "0.0.2";
+        version = "0.0.3";
         src = ./.;
 
         meta = with pkgs.lib; {
