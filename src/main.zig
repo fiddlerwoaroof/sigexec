@@ -107,8 +107,10 @@ fn closeFd(fd: posix.fd_t) void {
 }
 
 /// Reads exactly `key.len` bytes from `sock_fd` using `recvmsg(2)` so an
-/// `SCM_RIGHTS` ancillary message attached to the same datagram can be
-/// captured. If a single fd was passed, it is stored in `out_fd`.
+/// `SCM_RIGHTS` ancillary message carried by the same `sendmsg` call can be
+/// captured. If exactly one fd was passed, it is stored in `out_fd`; any
+/// other count (zero with no key-02, or more than one) is closed and
+/// reported as an error.
 fn recvKey(sock_fd: posix.fd_t, key: *[2]u8, out_fd: *?posix.fd_t) !void {
     var iov: posix.iovec = .{ .base = key[0..].ptr, .len = key.len };
     var ctl_buf: [64]u8 align(@alignOf(usize)) = undefined;
@@ -138,18 +140,7 @@ fn recvKey(sock_fd: posix.fd_t, key: *[2]u8, out_fd: *?posix.fd_t) !void {
         break;
     }
 
-    if (msg.controllen != 0) {
-        if (msg.control) |ptr| {
-            const cmsg: *const posix.system.cmsghdr = @ptrCast(@alignCast(ptr));
-            if (cmsg.level == posix.SOL.SOCKET and cmsg.type == posix.SCM.RIGHTS) {
-                const data_off = std.mem.alignForward(usize, @sizeOf(posix.system.cmsghdr), @alignOf(usize));
-                const bytes: [*]const u8 = @ptrCast(ptr);
-                var fd_val: c_int = undefined;
-                @memcpy(std.mem.asBytes(&fd_val), bytes[data_off..][0..@sizeOf(c_int)]);
-                out_fd.* = @intCast(fd_val);
-            }
-        }
-    }
+    try parseControlForFd(&msg, out_fd);
 
     while (got < key.len) {
         var iov2: posix.iovec = .{ .base = key[got..].ptr, .len = key.len - got };
@@ -172,4 +163,71 @@ fn recvKey(sock_fd: posix.fd_t, key: *[2]u8, out_fd: *?posix.fd_t) !void {
         if (n == 0) return error.EndOfStream;
         got += n;
     }
+}
+
+/// Walks every `cmsghdr` in `msg.control`, collecting fds from any
+/// `SCM_RIGHTS` messages. Errors out (and closes every collected fd) if the
+/// kernel truncated the control buffer, the cmsg layout is malformed, or
+/// anything other than exactly one fd was sent.
+fn parseControlForFd(msg: *const posix.msghdr, out_fd: *?posix.fd_t) !void {
+    const ctl_len: usize = @intCast(msg.controllen);
+    if (ctl_len == 0) return;
+    const ctl_ptr = msg.control orelse return;
+
+    if ((msg.flags & posix.MSG.CTRUNC) != 0) return error.ControlTruncated;
+
+    const base: [*]const u8 = @ptrCast(ctl_ptr);
+    const hdr_size = @sizeOf(posix.system.cmsghdr);
+    const data_off = std.mem.alignForward(usize, hdr_size, @alignOf(usize));
+
+    var fds: [4]posix.fd_t = undefined;
+    var n_fds: usize = 0;
+    var off: usize = 0;
+    while (off + hdr_size <= ctl_len) {
+        const cmsg: *const posix.system.cmsghdr = @ptrCast(@alignCast(base + off));
+        const cmsg_len: usize = @intCast(cmsg.len);
+        if (cmsg_len < data_off or off + cmsg_len > ctl_len) {
+            closeCollected(&fds, n_fds);
+            return error.MalformedCmsg;
+        }
+
+        if (cmsg.level == posix.SOL.SOCKET and cmsg.type == posix.SCM.RIGHTS) {
+            const payload_len = cmsg_len - data_off;
+            if (payload_len % @sizeOf(c_int) != 0) {
+                closeCollected(&fds, n_fds);
+                return error.MalformedCmsg;
+            }
+            const cmsg_n_fds = payload_len / @sizeOf(c_int);
+            var i: usize = 0;
+            while (i < cmsg_n_fds) : (i += 1) {
+                var fd_val: c_int = undefined;
+                @memcpy(
+                    std.mem.asBytes(&fd_val),
+                    (base + off + data_off + i * @sizeOf(c_int))[0..@sizeOf(c_int)],
+                );
+                const fd: posix.fd_t = @intCast(fd_val);
+                if (n_fds < fds.len) {
+                    fds[n_fds] = fd;
+                } else {
+                    closeFd(fd);
+                }
+                n_fds += 1;
+            }
+        }
+        off = std.mem.alignForward(usize, off + cmsg_len, @alignOf(usize));
+    }
+
+    if (n_fds == 1) {
+        out_fd.* = fds[0];
+        return;
+    }
+    if (n_fds > 1) {
+        closeCollected(&fds, @min(n_fds, fds.len));
+        return error.TooManyFds;
+    }
+}
+
+fn closeCollected(fds: *const [4]posix.fd_t, n: usize) void {
+    var i: usize = 0;
+    while (i < n) : (i += 1) closeFd(fds[i]);
 }
