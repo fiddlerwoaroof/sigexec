@@ -1,6 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
-const Net = std.Net;
+const net = std.Io.net;
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
@@ -12,24 +12,24 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
-    const addr = Net.Address.initUnix(args[1]) catch unreachable;
+    const addr = try net.UnixAddress.init(args[1]);
     var server = try addr.listen(io, .{});
     defer server.deinit(io);
 
     std.log.warn("listening at {s}", .{args[1]});
 
     while (true) {
-        const conn = try server.accept(io);
-        _ = io.async(handle, .{ io, conn, args[2..] });
+        const stream = try server.accept(io);
+        _ = io.async(handle, .{ io, stream, args[2..] });
     }
 }
 
 fn handle(
     io: Io,
-    conn: Net.Server.Connection,
+    stream: net.Stream,
     cmd_args: []const []const u8,
 ) void {
-    defer conn.stream.close(io);
+    defer stream.close(io);
 
     var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_state.deinit();
@@ -37,8 +37,8 @@ fn handle(
 
     var read_buf: [1024]u8 = undefined;
     var write_buf: [64]u8 = undefined;
-    var sr = conn.stream.reader(io, &read_buf);
-    var sw = conn.stream.writer(io, &write_buf);
+    var sr = stream.reader(io, &read_buf);
+    var sw = stream.writer(io, &write_buf);
 
     sw.interface.writeAll("ACK!\n") catch return;
     sw.interface.flush() catch return;
