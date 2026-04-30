@@ -2,11 +2,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    zig-overlay = {
-      url = "github:mitchellh/zig-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    zig-overlay.url = "github:mitchellh/zig-overlay";
   };
 
   outputs = {
@@ -20,7 +16,8 @@
       pkgs = import nixpkgs {
         inherit system;
       };
-      zig = zig-overlay.packages.${system}."0.16.0";
+      zigPkgs = zig-overlay.packages.${system};
+      zig = zigPkgs."0.16.0" or zigPkgs.master;
       build_zig = deriv @ {nativeBuildInputs ? [], ...}:
         pkgs.stdenv.mkDerivation ({
             dontConfigure = true;
