@@ -6,3 +6,4 @@ zig-cache
 /zls/
 result
 *.sw?
+.zig-cache

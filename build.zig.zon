@@ -1,5 +1,6 @@
 .{
     .name = .sigexec,
+    .fingerprint = 0xde2e71de716b49c3,
     .version = "0.0.3",
     .minimum_zig_version = "0.16.0",
     .paths = .{
