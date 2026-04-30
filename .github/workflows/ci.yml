@@ -22,9 +22,9 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v20
+      - uses: cachix/install-nix-action@v27
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
           nix develop -c zig build -Dtarget=aarch64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-gnu
           nix develop -c zig build -Dtarget=aarch64-linux-musl && mv zig-out/bin/sigexec out/sigexec-aarch64-linux-musl
           nix develop -c zig build -Dtarget=aarch64-macos-none && mv zig-out/bin/sigexec out/sigexec-aarch64-macos-none
-          nix develop -c zig build -Dtarget=i386-linux-gnu && mv zig-out/bin/sigexec out/sigexec-i386-linux-gnu
+          nix develop -c zig build -Dtarget=x86-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86-linux-gnu
           nix develop -c zig build -Dtarget=x86_64-linux-gnu && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-gnu
           nix develop -c zig build -Dtarget=x86_64-linux-musl && mv zig-out/bin/sigexec out/sigexec-x86_64-linux-musl
           nix develop -c zig build -Dtarget=x86_64-macos-none && mv zig-out/bin/sigexec out/sigexec-x86_64-macos-none
@@ -45,7 +45,7 @@ jobs:
       - name: Run test
         run: |
           nix run .\#do-test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: executables
           path: |

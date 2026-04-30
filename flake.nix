@@ -1,10 +1,6 @@
 {
   inputs = {
-    nixpkgs = {
-      type = "github";
-      owner = "nixos";
-      repo = "nixpkgs";
-    };
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -18,6 +14,7 @@
       pkgs = import nixpkgs {
         inherit system;
       };
+      zig = pkgs.zig_0_16;
       build_zig = deriv @ {nativeBuildInputs ? [], ...}:
         pkgs.stdenv.mkDerivation ({
             dontConfigure = true;
@@ -28,24 +25,24 @@
 
             installPhase = ''
               runHook preInstall
-              zig build -Drelease-safe -Dcpu=baseline --prefix $out install
+              zig build --release=safe -Dcpu=baseline --prefix $out install
               runHook postInstall
             '';
           }
           // deriv
           // {
-            nativeBuildInputs = [pkgs.zig_0_10] ++ nativeBuildInputs;
+            nativeBuildInputs = [zig] ++ nativeBuildInputs;
           });
       writeZsh = pkgs.writers.makeScriptWriter {interpreter = "${pkgs.zsh}/bin/zsh";};
       socat = pkgs.socat;
     in {
       devShells.default = pkgs.mkShell {
-        buildInputs = [pkgs.zig_0_10 socat];
+        buildInputs = [zig socat];
       };
-      devShell = self.devShells.default;
+      devShell = self.devShells.${system}.default;
       packages.default = build_zig {
         pname = "sigexec";
-        version = "0.0.2";
+        version = "0.0.3";
         src = ./.;
 
         meta = with pkgs.lib; {

@@ -1,58 +1,59 @@
 const std = @import("std");
-const net = std.net;
+const Io = std.Io;
+const net = std.Io.net;
 
-// pub const io_mode = .evented;
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const arena = init.arena.allocator();
 
-pub fn main() anyerror!void {
-    var allocator = std.heap.page_allocator;
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
-
+    const args = try init.minimal.args.toSlice(arena);
     if (args.len < 3) {
         std.log.err("Usage: sigexec <socket> <command...>", .{});
         return;
     }
 
-    var server = net.StreamServer.init(.{});
-    defer server.deinit();
+    const addr = try net.UnixAddress.init(args[1]);
+    var server = try addr.listen(io, .{});
+    defer server.deinit(io);
 
-    try server.listen(net.Address.initUnix(args[1]) catch unreachable);
-    std.log.warn("listening at {}\n", .{server.listen_address});
+    std.log.warn("listening at {s}", .{args[1]});
 
     while (true) {
-        const client = try allocator.create(Client);
-        client.* = Client{
-            .conn = try server.accept(),
-            .handle_frame = async client.handle(allocator, args[2..]),
-        };
+        const stream = try server.accept(io);
+        _ = io.async(handle, .{ io, stream, args[2..] });
     }
 }
 
-fn nextLine(reader: anytype, buffer: []u8) !?[]const u8 {
-    var line = (try reader.readUntilDelimiterOrEof(
-        buffer,
-        '\n',
-    )) orelse return null;
+fn handle(
+    io: Io,
+    stream: net.Stream,
+    cmd_args: []const []const u8,
+) void {
+    defer stream.close(io);
 
-    return line;
+    var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_state.deinit();
+    const alloc = arena_state.allocator();
+
+    var read_buf: [1024]u8 = undefined;
+    var write_buf: [64]u8 = undefined;
+    var sr = stream.reader(io, &read_buf);
+    var sw = stream.writer(io, &write_buf);
+
+    sw.interface.writeAll("ACK!\n") catch return;
+    sw.interface.flush() catch return;
+
+    const line = sr.interface.takeDelimiterExclusive('\n') catch return;
+
+    var dynargs: std.ArrayList([]const u8) = .empty;
+    defer dynargs.deinit(alloc);
+    dynargs.appendSlice(alloc, cmd_args) catch return;
+    const owned_line = alloc.dupe(u8, line) catch return;
+    dynargs.append(alloc, owned_line) catch return;
+
+    var child = std.process.spawn(io, .{ .argv = dynargs.items }) catch |err| {
+        std.log.err("spawn failed: {s}", .{@errorName(err)});
+        return;
+    };
+    _ = child.wait(io) catch {};
 }
-
-const Client = struct {
-    conn: net.StreamServer.Connection,
-    handle_frame: @Frame(handle),
-    fn handle(self: *Client, allocator: std.mem.Allocator, args: []const []u8) !void {
-        var dynargs = std.ArrayList([]const u8).init(allocator);
-        defer dynargs.deinit();
-
-        try dynargs.appendSlice(args);
-
-        try self.conn.stream.writer().writeAll("ACK!\n");
-
-        var buffer: [1024]u8 = undefined;
-        var nl = (try nextLine(self.conn.stream.reader(), &buffer)).?;
-        try dynargs.append(nl);
-
-        var proc = std.ChildProcess.init(dynargs.toOwnedSlice(), allocator);
-        _ = try proc.spawn();
-    }
-};
