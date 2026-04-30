@@ -1,6 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
-const net = std.net;
+const Net = std.Io.Net;
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
@@ -12,24 +12,24 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
-    const addr = net.Address.initUnix(args[1]) catch unreachable;
-    var server = try addr.listen(.{});
-    defer server.deinit();
+    const addr = Net.Address.initUnix(args[1]) catch unreachable;
+    var server = try addr.listen(io, .{});
+    defer server.deinit(io);
 
     std.log.warn("listening at {s}", .{args[1]});
 
     while (true) {
-        const conn = try server.accept();
+        const conn = try server.accept(io);
         _ = io.async(handle, .{ io, conn, args[2..] });
     }
 }
 
 fn handle(
     io: Io,
-    conn: net.Server.Connection,
+    conn: Net.Server.Connection,
     cmd_args: []const []const u8,
 ) void {
-    defer conn.stream.close();
+    defer conn.stream.close(io);
 
     var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_state.deinit();
