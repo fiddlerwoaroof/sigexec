@@ -16,21 +16,24 @@ pub fn main(init: std.process.Init) !void {
     var server = try addr.listen(.{});
     defer server.deinit();
 
-    std.log.warn("listening at {f}", .{server.listen_address});
+    std.log.warn("listening at {s}", .{args[1]});
 
     while (true) {
         const conn = try server.accept();
-        _ = io.async(handle, .{ io, arena, conn, args[2..] });
+        _ = io.async(handle, .{ io, conn, args[2..] });
     }
 }
 
 fn handle(
     io: Io,
-    arena: std.mem.Allocator,
     conn: net.Server.Connection,
     cmd_args: []const []const u8,
 ) void {
     defer conn.stream.close();
+
+    var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_state.deinit();
+    const alloc = arena_state.allocator();
 
     var read_buf: [1024]u8 = undefined;
     var write_buf: [64]u8 = undefined;
@@ -43,12 +46,12 @@ fn handle(
     const line = sr.interface.takeDelimiterExclusive('\n') catch return;
 
     var dynargs: std.ArrayList([]const u8) = .empty;
-    defer dynargs.deinit(arena);
-    dynargs.appendSlice(arena, cmd_args) catch return;
-    const owned_line = arena.dupe(u8, line) catch return;
-    dynargs.append(arena, owned_line) catch return;
+    defer dynargs.deinit(alloc);
+    dynargs.appendSlice(alloc, cmd_args) catch return;
+    const owned_line = alloc.dupe(u8, line) catch return;
+    dynargs.append(alloc, owned_line) catch return;
 
-    var proc = std.process.Child.init(dynargs.items, arena);
+    var proc = std.process.Child.init(dynargs.items, alloc);
     _ = proc.spawn() catch |err| {
         std.log.err("spawn failed: {s}", .{@errorName(err)});
     };
