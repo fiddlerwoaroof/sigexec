@@ -45,17 +45,23 @@ printf '01second\n' | socat - unix-connect:/tmp/sigexec.sock
 printf '01third\n'  | socat - unix-connect:/tmp/sigexec.sock
 ```
 
-For key `02` (fd-passing), socat has no built-in `SCM_RIGHTS` mode; a few
-lines of Python suffice:
+For key `02` (fd-passing), socat has no built-in `SCM_RIGHTS` mode. Use the
+companion `sigexec-sendfd` binary (built alongside `sigexec`):
 
 ```sh
 ./result/bin/sigexec /tmp/sigexec.sock /usr/bin/cat &
+./result/bin/sigexec-sendfd /tmp/sigexec.sock /etc/hostname
+# server prints the contents of /etc/hostname
+```
+
+Or a few lines of Python:
+
+```sh
 python3 -c '
 import os, socket, array
 fd = os.open("/etc/hostname", os.O_RDONLY)
 s = socket.socket(socket.AF_UNIX); s.connect("/tmp/sigexec.sock"); s.recv(64)
 s.sendmsg([b"02"], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", [fd]).tobytes())])'
-# server prints the contents of /etc/hostname
 ```
 
 ## Cross-compile matrix

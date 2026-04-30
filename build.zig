@@ -14,6 +14,16 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(exe);
 
+    const sendfd = b.addExecutable(.{
+        .name = "sigexec-sendfd",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sendfd.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(sendfd);
+
     const run_exe = b.addRunArtifact(exe);
     run_exe.step.dependOn(b.getInstallStep());
     if (b.args) |args| run_exe.addArgs(args);
