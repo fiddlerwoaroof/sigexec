@@ -39,7 +39,7 @@
       devShells.default = pkgs.mkShell {
         buildInputs = [zig socat];
       };
-      devShell = self.devShells.default;
+      devShell = self.devShells.${system}.default;
       packages.default = build_zig {
         pname = "sigexec";
         version = "0.0.3";
