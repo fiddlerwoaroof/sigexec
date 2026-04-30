@@ -1,8 +1,10 @@
 # sigexec — quick reference for Claude Code
 
-A small Unix-socket-driven command runner. Each connection sends one line; the
-server writes `ACK!`, reads the line, and spawns the configured command with
-the line appended as the last argument.
+A small Unix-socket-driven command runner. Each connection sends a 2-byte
+ASCII message key followed by either a line (key `01`) or an `SCM_RIGHTS` fd
+(key `02`); the server writes `ACK!` and then spawns the configured command
+with either the line appended as argv (`01`) or with the passed fd as stdin
+(`02`).
 
 ## Build & test
 
@@ -19,13 +21,41 @@ nix develop -c zig build -Dtarget=x86_64-linux-gnu    # cross-compile
 nix develop -c zig build test                         # test step (no unit tests yet)
 ```
 
+## Wire protocol
+
+Each connection: server writes `ACK!\n`, then the client sends a 2-byte ASCII
+message key.
+
+| Key  | Behavior                                                                                          |
+|------|---------------------------------------------------------------------------------------------------|
+| `01` | Read a `\n`-terminated line from the socket; spawn the command with the line appended as argv.    |
+| `02` | Receive a single `SCM_RIGHTS` ancillary fd; spawn the command with that fd dup2'd onto stdin.     |
+
+For `02`, the client must use `sendmsg(2)` with `SOL_SOCKET`/`SCM_RIGHTS`
+carrying exactly one fd; the 2-byte key sits in the iovec of the same message
+so the server captures both with one `recvmsg` call.
+
 ## Manual smoke test
 
 ```sh
+# Key 01 — line-as-argv (this is what test.zsh exercises):
 ./result/bin/sigexec /tmp/sigexec.sock /usr/bin/echo "it:" &
-echo first  | socat - unix-connect:/tmp/sigexec.sock   # → "ACK!" over the socket; server prints "it: first"
-echo second | socat - unix-connect:/tmp/sigexec.sock
-echo third  | socat - unix-connect:/tmp/sigexec.sock
+printf '01first\n'  | socat - unix-connect:/tmp/sigexec.sock   # → "ACK!" on the socket; server prints "it: first"
+printf '01second\n' | socat - unix-connect:/tmp/sigexec.sock
+printf '01third\n'  | socat - unix-connect:/tmp/sigexec.sock
+```
+
+For key `02` (fd-passing), socat has no built-in `SCM_RIGHTS` mode; a few
+lines of Python suffice:
+
+```sh
+./result/bin/sigexec /tmp/sigexec.sock /usr/bin/cat &
+python3 -c '
+import os, socket, array
+fd = os.open("/etc/hostname", os.O_RDONLY)
+s = socket.socket(socket.AF_UNIX); s.connect("/tmp/sigexec.sock"); s.recv(64)
+s.sendmsg([b"02"], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", [fd]).tobytes())])'
+# server prints the contents of /etc/hostname
 ```
 
 ## Cross-compile matrix

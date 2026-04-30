@@ -18,9 +18,9 @@ while ! [[ -S "$socket" ]]; do
   sleep 5
 done
 
-echo  first | socat - unix-connect:"$socket"
-echo second | socat - unix-connect:"$socket"
-echo  third | socat - unix-connect:"$socket"
+printf '01%s\n' first  | socat - unix-connect:"$socket"
+printf '01%s\n' second | socat - unix-connect:"$socket"
+printf '01%s\n' third  | socat - unix-connect:"$socket"
 
 ## Expected Output
 
