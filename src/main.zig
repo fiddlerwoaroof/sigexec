@@ -51,7 +51,26 @@ fn handle(
     const owned_line = alloc.dupe(u8, line) catch return;
     dynargs.append(alloc, owned_line) catch return;
 
-    var proc = std.process.Child.init(dynargs.items, alloc);
+    var proc: std.process.Child = .{
+        .allocator = alloc,
+        .argv = dynargs.items,
+        .id = undefined,
+        .thread_handle = undefined,
+        .err_pipe = null,
+        .term = null,
+        .env_map = null,
+        .cwd = null,
+        .uid = null,
+        .gid = null,
+        .pgid = null,
+        .stdin = null,
+        .stdout = null,
+        .stderr = null,
+        .stdin_behavior = .Inherit,
+        .stdout_behavior = .Inherit,
+        .stderr_behavior = .Inherit,
+        .expand_arg0 = .no_expand,
+    };
     _ = proc.spawn() catch |err| {
         std.log.err("spawn failed: {s}", .{@errorName(err)});
     };
