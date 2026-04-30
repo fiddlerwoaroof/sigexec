@@ -14,7 +14,7 @@
       pkgs = import nixpkgs {
         inherit system;
       };
-      zig = pkgs.zig_0_16 or pkgs.zig;
+      zig = pkgs.zig_0_16;
       build_zig = deriv @ {nativeBuildInputs ? [], ...}:
         pkgs.stdenv.mkDerivation ({
             dontConfigure = true;
