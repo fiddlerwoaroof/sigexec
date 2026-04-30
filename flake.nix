@@ -1,23 +1,26 @@
 {
   inputs = {
-    nixpkgs = {
-      type = "github";
-      owner = "nixos";
-      repo = "nixpkgs";
-    };
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    zig-overlay = {
+      url = "github:mitchellh/zig-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    zig-overlay,
   }: let
   in
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
       };
+      zig = zig-overlay.packages.${system}."0.16.0";
       build_zig = deriv @ {nativeBuildInputs ? [], ...}:
         pkgs.stdenv.mkDerivation ({
             dontConfigure = true;
@@ -34,13 +37,13 @@
           }
           // deriv
           // {
-            nativeBuildInputs = [pkgs.zig_0_16] ++ nativeBuildInputs;
+            nativeBuildInputs = [zig] ++ nativeBuildInputs;
           });
       writeZsh = pkgs.writers.makeScriptWriter {interpreter = "${pkgs.zsh}/bin/zsh";};
       socat = pkgs.socat;
     in {
       devShells.default = pkgs.mkShell {
-        buildInputs = [pkgs.zig_0_16 socat];
+        buildInputs = [zig socat];
       };
       devShell = self.devShells.default;
       packages.default = build_zig {
