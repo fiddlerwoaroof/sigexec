@@ -67,7 +67,7 @@
       apps.do-test = {
         type = "app";
         program = toString (writeZsh "test.zsh" ''
-          PATH="$PATH:${sigexec}/bin:${socat}/bin"
+          PATH="${sigexec}/bin:${socat}/bin:${pkgs.python3}/bin:$PATH"
           ${(builtins.readFile ./test.zsh)}
         '');
       };
