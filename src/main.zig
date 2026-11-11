@@ -2,6 +2,7 @@ const std = @import("std");
 const Io = std.Io;
 const net = std.Io.net;
 const posix = std.posix;
+const cmsg_layout = @import("cmsg.zig");
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
@@ -177,14 +178,14 @@ fn parseControlForFd(msg: *const posix.msghdr, out_fd: *?posix.fd_t) !void {
     if ((msg.flags & posix.MSG.CTRUNC) != 0) return error.ControlTruncated;
 
     const base: [*]const u8 = @ptrCast(ctl_ptr);
-    const hdr_size = @sizeOf(posix.system.cmsghdr);
-    const data_off = std.mem.alignForward(usize, hdr_size, @alignOf(usize));
+    const hdr_size = @sizeOf(cmsg_layout.Header);
+    const data_off = cmsg_layout.data_offset;
 
     var fds: [4]posix.fd_t = undefined;
     var n_fds: usize = 0;
     var off: usize = 0;
     while (off + hdr_size <= ctl_len) {
-        const cmsg: *const posix.system.cmsghdr = @ptrCast(@alignCast(base + off));
+        const cmsg: *const cmsg_layout.Header = @ptrCast(@alignCast(base + off));
         const cmsg_len: usize = @intCast(cmsg.len);
         if (cmsg_len < data_off or off + cmsg_len > ctl_len) {
             closeCollected(&fds, n_fds);
@@ -214,7 +215,7 @@ fn parseControlForFd(msg: *const posix.msghdr, out_fd: *?posix.fd_t) !void {
                 n_fds += 1;
             }
         }
-        off = std.mem.alignForward(usize, off + cmsg_len, @alignOf(usize));
+        off = cmsg_layout.alignUp(off + cmsg_len);
     }
 
     if (n_fds == 1) {

@@ -10,7 +10,7 @@ with either the line appended as argv (`01`) or with the passed fd as stdin
 
 ```sh
 nix build                  # builds result/bin/sigexec
-nix run .#do-test          # runs test.zsh end-to-end (expects: ACK! / it: first / ACK! / it: second / ACK! / it: third)
+nix run .#do-test          # runs test.zsh end-to-end (expects: ACK! / it: first / ACK! / it: second / ACK! / it: third / fd: sendfd / fd: python; the fd lines are asserted)
 ```
 
 `zig build` works inside `nix develop -c …` (the dev shell pins Zig 0.16):
@@ -34,6 +34,10 @@ message key.
 For `02`, the client must use `sendmsg(2)` with `SOL_SOCKET`/`SCM_RIGHTS`
 carrying exactly one fd; the 2-byte key sits in the iovec of the same message
 so the server captures both with one `recvmsg` call.
+
+The `CMSG_*` layout differs by platform (Linux aligns to `size_t`; Darwin uses
+a 12-byte header and 4-byte alignment). `src/cmsg.zig` resolves it at comptime
+and asserts the Darwin values; use it rather than hand-computing offsets.
 
 ## Manual smoke test
 

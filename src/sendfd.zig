@@ -2,6 +2,7 @@ const std = @import("std");
 const Io = std.Io;
 const net = std.Io.net;
 const posix = std.posix;
+const cmsg_layout = @import("cmsg.zig");
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
@@ -36,12 +37,12 @@ fn sendKeyWithFd(sock_fd: posix.fd_t, fd: posix.fd_t) !void {
     var key: [2]u8 = "02".*;
     var iov: posix.iovec_const = .{ .base = &key, .len = key.len };
 
-    const data_off = std.mem.alignForward(usize, @sizeOf(posix.system.cmsghdr), @alignOf(usize));
-    const cmsg_len = data_off + @sizeOf(c_int);
-    const cmsg_space = std.mem.alignForward(usize, cmsg_len, @alignOf(usize));
+    const data_off = cmsg_layout.data_offset;
+    const cmsg_len = cmsg_layout.len(@sizeOf(c_int));
+    const cmsg_space = cmsg_layout.space(@sizeOf(c_int));
 
     var ctl: [64]u8 align(@alignOf(usize)) = @splat(0);
-    const cmsg: *posix.system.cmsghdr = @ptrCast(@alignCast(&ctl));
+    const cmsg: *cmsg_layout.Header = @ptrCast(@alignCast(&ctl));
     cmsg.* = .{
         .len = @intCast(cmsg_len),
         .level = posix.SOL.SOCKET,
